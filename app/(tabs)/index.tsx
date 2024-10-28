@@ -14,6 +14,7 @@ export default function HomeScreen() {
   const [goalModalVisible, setGoalModalVisible] = useState(false);
   const [inputCalories, setInputCalories] = useState('');
   const [isIncrease, setIsIncrease] = useState(true);
+  const [calorieWarning, setCalorieWarning] = useState('');
 
   useEffect(() => {
     async function initializeDatabase() {
@@ -187,10 +188,30 @@ export default function HomeScreen() {
   };
 
   const handleModalCalories = async () => {
-    if (!inputCalories) return;
-    
+    // Check if inputCalories exists and is a valid number
+    if (!inputCalories || isNaN(parseInt(inputCalories))) {
+      setCalorieWarning('Please enter a valid number.');
+      setTimeout(() => setCalorieWarning(''), 2500); // Hide warning after 2.5 seconds
+      setInputCalories(''); // Clear input field
+      return;
+    }
+  
     const currentCalories = parseInt(inputCalories);
     const newTotal = isIncrease ? totalCalories + currentCalories : Math.max(0, totalCalories - currentCalories);
+  
+    // Check if newTotal exceeds calorie goal
+    if (newTotal > parseInt(calorieGoal)) {
+      setCalorieWarning(`Du überschreitest dein kalorienziel`); // Set warning message
+      setInputCalories(''); // Clear input field
+  
+      // Set a timeout to clear the warning after 2.5 seconds
+      setTimeout(() => setCalorieWarning(''), 5500);
+      return; // Exit function
+    }
+  
+    // Clear any existing warning if within the goal
+    setCalorieWarning('');
+    
     let newStreak = streak;
   
     try {
@@ -200,21 +221,17 @@ export default function HomeScreen() {
       );
   
       if (newTotal >= parseInt(calorieGoal)) {
-        // If goal is reached, increase streak
-        newStreak += 1;
+        newStreak += 1; // Increase streak if goal is met
       } else if (result.length > 0 && newTotal < parseInt(calorieGoal)) {
-        // If existing entry and goal not reached, reset streak
-        newStreak = 0;
+        newStreak = 0; // Reset streak if goal not met
       }
   
       if (result.length > 0) {
-        // Update existing entry
         await db.runAsync(
           'UPDATE calorie_data SET calories = ?, streak = ? WHERE date = ?',
           [newTotal, newStreak, currentDate]
         );
       } else {
-        // Insert new entry if none exists
         await db.runAsync(
           'INSERT INTO calorie_data (calories, calorie_goal, date, streak) VALUES (?, ?, ?, ?)',
           [newTotal, calorieGoal, currentDate, newStreak]
@@ -229,6 +246,10 @@ export default function HomeScreen() {
       console.error('Error updating calories:', error);
     }
   };
+  
+  
+  
+  
 
   const progressPercentage = Math.min((totalCalories / parseInt(calorieGoal)) * 100, 100);
 
@@ -263,6 +284,9 @@ export default function HomeScreen() {
     <Text style={styles.goalButtonText}>Ziel kalorien</Text>
   </TouchableOpacity>
 </View>
+
+
+
 
   <View style={styles.streakBarContainer}>
           <Image 
@@ -355,6 +379,7 @@ export default function HomeScreen() {
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
         >
+          
           <View style={styles.modalContainer}>
             <View style={styles.modalView}>
               <Text style={styles.modalText}>
@@ -386,6 +411,9 @@ export default function HomeScreen() {
              
               </View>
             </View>
+            {calorieWarning ? (
+        <Text style={styles.warningText}>{calorieWarning}</Text>
+      ) : null}
           </View>
         </Modal>
 
@@ -396,6 +424,7 @@ export default function HomeScreen() {
           visible={goalModalVisible}
           onRequestClose={() => setGoalModalVisible(false)}
         >
+          
           <View style={styles.modalContainer}>
             <View style={styles.modalView}>
               <Text style={styles.modalText}>Ziel Kalorien setzen</Text>
@@ -447,6 +476,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: "#7D7D7D",
   },
+  
   progressBarContainer: {
     height: 50,
     backgroundColor: '#141414',
@@ -525,6 +555,15 @@ const styles = StyleSheet.create({
   streakImage: {
     height: 90,
     
+  },
+
+  warningText: {
+    fontSize: 16,
+    color: "red",
+    position: "absolute",
+    zIndex: 999,
+    top: 350,
+    left: "25%",
   },
 
   
