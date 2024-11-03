@@ -11,7 +11,7 @@ import { Prestige } from '@/components/Prestige/prestige';
 const Statistics = () => {
   const [sound, setSound] = useState();
   const [unlock, setUnlock] = useState(false)
-  const { db, streak } = useDatabase();
+  const { db, streak, highestStreak, completionStats, perfectMonths } = useDatabase();
 
   async function playSound() {
     console.log('Loading Sound');
@@ -61,7 +61,10 @@ const Statistics = () => {
       <View style={styles.calorieGaolContainer}>
       <Button title="Play Sound" onPress={playSound} /> 
 
-      <StatsDashboard streak={streak}/>
+      <StatsDashboard 
+      streak={highestStreak}
+       completionStats={completionStats}
+       perfectMonths={perfectMonths}/>
       </View>
     
       

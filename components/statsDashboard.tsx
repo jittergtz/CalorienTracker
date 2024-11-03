@@ -4,7 +4,7 @@ import { View, Text, Image, StyleSheet, Pressable, Dimensions } from 'react-nati
 
 import { Prestige } from './Prestige/prestige';
 
-const StatsDashboard = ({streak}: any) => {
+const StatsDashboard = ({streak, completionStats, perfectMonths}: any) => {
    
   
 
@@ -91,7 +91,7 @@ const StatsDashboard = ({streak}: any) => {
               fontSize: 24,
               fontWeight: 'bold',
             }}>
-              3.34
+            {completionStats.completionRate}%
             </Text>
           </View>
   
@@ -124,7 +124,7 @@ const StatsDashboard = ({streak}: any) => {
               fontSize: 24,
               fontWeight: 'bold',
             }}>
-              3
+              {perfectMonths}
             </Text>
           </View>
         </View>

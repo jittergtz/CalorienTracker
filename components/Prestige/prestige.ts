@@ -31,10 +31,10 @@ export const Prestige: prestige[] = [
       streak: 115,
     },
     {
-      name: "Berserk",
+      name: "Olymp",
       img: require('@/assets/images/pres10a.png'),
       description: "Rang 14 wurde erreicht  du bist auf einer 100 Tage Streak! ",
-      streak: 4,
+      streak: 100,
     },
 
     {

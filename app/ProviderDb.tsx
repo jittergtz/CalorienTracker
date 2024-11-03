@@ -9,11 +9,19 @@ export const DatabaseProvider = ({ children }: any) => {
   const [streak, setStreak] = useState(35);
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().slice(0, 10));
   const [calories, setCalories] = useState(0);
+  const [highestStreak, setHighestStreak] = useState(0);
   const [calorieGoal, setCalorieGoal] = useState('2250'); // Set a default value
   const [totalCalories, setTotalCalories] = useState(0);
   const [inputCalories, setInputCalories] = useState('');
   const [isIncrease, setIsIncrease] = useState(true);
   const [calorieWarning, setCalorieWarning] = useState('');
+  const [perfectMonths, setPerfectMonths] = useState(0);
+
+  const [completionStats, setCompletionStats] = useState({
+    totalDays: 0,
+    successfulDays: 0,
+    completionRate: 0
+  });
 
   useEffect(() => {
     async function initializeDatabase() {
@@ -21,9 +29,105 @@ export const DatabaseProvider = ({ children }: any) => {
       setDb(database);
       await createTable(database);
       await resetDailyData(database);
+      await fetchHighestStreak(database); // Fetch highest streak on init
+      await calculateCompletionStats(database);
+      await calculatePerfectMonths(database);
     }
     initializeDatabase();
   }, []);
+
+
+  const calculatePerfectMonths = async (dbInstance) => {
+    try {
+      // First, get all streaks that were 30 days or longer
+      const streaksResult = await dbInstance.getAllAsync(
+        'SELECT streak FROM calorie_data WHERE streak >= 30 GROUP BY date ORDER BY streak DESC'
+      );
+      
+      let totalPerfectMonths = 0;
+      
+      // Calculate perfect months from each qualifying streak
+      streaksResult.forEach(result => {
+        const streakDays = result.streak;
+        const monthsInStreak = Math.floor(streakDays / 30);
+        totalPerfectMonths += monthsInStreak;
+      });
+
+      setPerfectMonths(totalPerfectMonths);
+      console.log('Perfect months calculated:', totalPerfectMonths);
+      
+      return totalPerfectMonths;
+    } catch (error) {
+      console.error('Error calculating perfect months:', error);
+      setPerfectMonths(0);
+      return 0;
+    }
+  };
+
+
+  const calculateCompletionStats = async (dbInstance) => {
+    try {
+      // Get all days except today (since it's not completed yet)
+      const today = new Date().toISOString().slice(0, 10);
+      
+      // First, get total number of days recorded
+      const totalDaysResult = await dbInstance.getAllAsync(
+        'SELECT COUNT(*) as total FROM calorie_data WHERE date != ?',
+        [today]
+      );
+      
+      // Then, get number of successful days
+      const successfulDaysResult = await dbInstance.getAllAsync(
+        'SELECT COUNT(*) as successful FROM calorie_data WHERE calories >= calorie_goal AND date != ?',
+        [today]
+      );
+      
+      const totalDays = totalDaysResult[0].total;
+      const successfulDays = successfulDaysResult[0].successful;
+      const completionRate = totalDays > 0 
+        ? ((successfulDays / totalDays) * 100).toFixed(1)
+        : 0;
+
+      setCompletionStats({
+        totalDays,
+        successfulDays,
+        completionRate: parseFloat(completionRate)
+      });
+
+      console.log('Completion stats calculated:', {
+        totalDays,
+        successfulDays,
+        completionRate
+      });
+    } catch (error) {
+      console.error('Error calculating completion stats:', error);
+      setCompletionStats({
+        totalDays: 0,
+        successfulDays: 0,
+        completionRate: 0
+      });
+    }
+  };
+
+  
+  const fetchHighestStreak = async (dbInstance) => {
+    try {
+      const result = await dbInstance.getAllAsync(
+        'SELECT MAX(streak) as highest_streak FROM calorie_data'
+      );
+      
+      if (result.length > 0 && result[0].highest_streak !== null) {
+        setHighestStreak(result[0].highest_streak);
+        console.log('Highest streak found:', result[0].highest_streak);
+      } else {
+        setHighestStreak(0);
+        console.log('No streak records found, setting highest streak to 0');
+      }
+    } catch (error) {
+      console.error('Error fetching highest streak:', error);
+      setHighestStreak(0);
+    }
+  };
 
   const resetDailyData = async (dbInstance) => {
     const today = new Date().toISOString().slice(0, 10);
@@ -55,18 +159,10 @@ export const DatabaseProvider = ({ children }: any) => {
           // If yesterday met the goal, keep the streak as is
           newStreak = streak;
           console.log("Yesterday's goal was met. Keeping streak as:", newStreak);
+
+       
         }
       }
-
-
-
-
-
-
-
-
-
-
 
 
       // Check if there's an entry for today
@@ -95,7 +191,14 @@ export const DatabaseProvider = ({ children }: any) => {
       // Log the final streak to confirm
       console.log("Data reset for today completed. Final streak value for today:", newStreak);
   
-      // Update the UI with the new values
+      if (newStreak > highestStreak) {
+        setHighestStreak(newStreak);
+      }
+
+      // After updating the daily data, recalculate completion stats
+      await calculateCompletionStats(dbInstance);
+      await calculatePerfectMonths(dbInstance);
+  
       setTotalCalories(0);
       setStreak(newStreak);
     } catch (error) {
@@ -236,6 +339,9 @@ export const DatabaseProvider = ({ children }: any) => {
       db,
       streak, 
       setStreak,
+      highestStreak,
+      completionStats,
+      perfectMonths,
       calorieGoal, 
       setCalorieGoal,
       calories, 

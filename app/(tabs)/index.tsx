@@ -186,16 +186,22 @@ export default function HomeScreen() {
 
   const getNextStreakMilestone = (currentStreak) => {
     if (currentStreak < 3) return 3;
-    if (currentStreak < 10) return 10;
-    if (currentStreak < 20) return 20;
+    if (currentStreak < 7) return 7;
+    if (currentStreak < 12) return 12;
+    if (currentStreak < 18) return 18;
+    if (currentStreak < 25) return 25;
     if (currentStreak < 30) return 30;
-    if (currentStreak < 35) return 35;
     if (currentStreak < 40) return 40;
-    if (currentStreak < 45) return 45;
     if (currentStreak < 50) return 50;
     if (currentStreak < 60) return 60;
-    if (currentStreak < 75) return 75;
+    if (currentStreak < 70) return 70;
+    if (currentStreak < 80) return 70;
+    if (currentStreak < 90) return 70;
     if (currentStreak < 100) return 100;
+    if (currentStreak < 115) return 115;
+    if (currentStreak < 130) return 130;
+    if (currentStreak < 150) return 150;
+    if (currentStreak < 175) return 175;
     return currentStreak; // If already at or above 100
   };
 
