@@ -32,7 +32,7 @@ export default function HomeScreen() {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [goalModalVisible, setGoalModalVisible] = useState(false);
-
+  const [advancedDashboard, setAdvancedDashboard] = useState(false)
 
 
   const getStreakColor = (streak) => {
@@ -231,9 +231,13 @@ export default function HomeScreen() {
           </View>
          
           <View style={styles.streakLevelTextContainer}>
-            <View style={styles.leveltext}><Text style={styles.streakBarText}>
-              Streak  <Text style={{color: "#969696"}}>{streak}</Text> </Text>
-              </View>
+          <LinearGradient
+             style={styles.leveltextPurple}  
+             start={{ x: 0, y: 0 }}
+             end={{ x: 1, y: 0 }}
+             colors={['#1A0213', '#69198E', '#1A0213']}>
+                <Text style={styles.streakText}>Streak {streak}</Text> 
+            </LinearGradient>
             <View style={styles.leveltext}><Text style={styles.streakBarText} >
                Nächster Rang ab Streak <Text style={{color: "#B07D31"}}>{getNextStreakMilestone(streak)}</Text></Text></View>
           </View>
@@ -246,16 +250,27 @@ export default function HomeScreen() {
 
        </View>
 
-
-       <NutritionDashboard 
-       calories={totalCalories} 
-       calorieTarget={calorieGoal}
-       proteinCurrent={44}
-       proteinGoal={120}
-       carbsCurrent={150}
-       carbsGoal={200}
-       fatsCurrent={90}
-       fatsGoal={190}  />
+       <View style={{ height: 23,}}>
+        <Text style={{color: "#6B6B6B", fontWeight: "bold",fontSize: 15, }}>Tages Kalorien</Text>
+        </View>
+     
+     
+      {advancedDashboard ? (
+      <NutritionDashboard
+        calories={totalCalories}
+        calorieTarget={calorieGoal}
+        protein={{ current: 44, target: 120 }}
+        carbs={{ current: 150, target: 200 }}
+        fats={{ current: 90, target: 190 }}
+      />
+       ) : (
+      <DonutChart 
+        currentValue={totalCalories} 
+        targetValue={calorieGoal} 
+      />
+        )}
+        
+     
 
         {/* Add/Subtract Buttons */}
         <View style={styles.buttonContainer}>
@@ -435,8 +450,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
-    marginTop: 12,
+    gap: 10,
+    marginTop: 10,
     
   },
   button: {
@@ -554,6 +569,18 @@ const styles = StyleSheet.create({
   },
    
 
+  leveltextPurple: {
+    color: "white",
+    
+    borderRadius: 12, 
+    backgroundColor: "#1F1E1E",
+    padding: 4,
+    paddingHorizontal: 12,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+
     streakLevelTextContainer: {
       display: "flex",
       width: "full",
@@ -578,7 +605,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#252525",
     borderRadius: 20,
     width: "full",
-    height: 20,
+    height: 12,
   },
 
   streakImageBar: {
@@ -590,7 +617,7 @@ const styles = StyleSheet.create({
   streakBarText: {
     color: "#6A6A6A",
     fontWeight: "bold",
-    fontSize: 12,
+    fontSize: 13,
     paddingHorizontal: 5,
   },
   
@@ -636,7 +663,7 @@ const styles = StyleSheet.create({
   modalButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
+    gap: 4,
     width: '100%',
   },
   addButton: {

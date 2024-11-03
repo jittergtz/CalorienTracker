@@ -20,8 +20,8 @@ interface DonutChartProps {
 }
 
 const DonutChart: React.FC<DonutChartProps> = ({
-  currentValue = 1916,
-  targetValue = 2250,
+  currentValue ,
+  targetValue ,
   size = 160,
   strokeWidth = 12,
   duration = 1000,

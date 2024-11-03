@@ -228,7 +228,7 @@ const LevelBannerModal = ({streak}: any) => {
             <Image  
            recyclingKey="animated" 
           contentFit="contain" 
-          source={require('@/assets/gifs/zeusCd.webp')} style={styles.callingCard} />
+          source={require('@/assets/gifs/underFireCd.webp')} style={styles.callingCard} />
           </View>
          </Animated.View>
 
