@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "tracker",
-    "slug": "tracker",
+    "name": "Track++",
+    "slug": "track",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -10,10 +10,23 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffffff",
+      "assetBundlePatterns": [
+       "assets/sounds/*"
+       ]
+
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sandrogtz.track",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      },
+      "assetBundlePatterns": [
+        "assets/sounds/*"
+        ]
     },
     "android": {
       "adaptiveIcon": {
@@ -31,6 +44,20 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "1e8de52d-6709-4585-af0c-254005f3722a"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/1e8de52d-6709-4585-af0c-254005f3722a"
     }
   }
 }

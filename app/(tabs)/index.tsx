@@ -1,102 +1,39 @@
 // @ts-nocheck
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput, Image, Pressable } from 'react-native';
 import * as SQLite from 'expo-sqlite';
+import LevelBanner from "@/components/LevelUpCard"
+import { useDatabase } from '../ProviderDb';
+import { Prestige } from '@/components/Prestige/prestige';
+import { LinearGradient } from 'expo-linear-gradient';
+import  DonutChart from "@/components/DonutChart"
+import NutritionDashboard from "@/components/AdvancedDashboard"
 
 export default function HomeScreen() {
-  const [db, setDb] = useState(null);
-  const [calories, setCalories] = useState('');
-  const [calorieGoal, setCalorieGoal] = useState('2250'); // Set a default value
-  const [totalCalories, setTotalCalories] = useState(0);
-  const [streak, setStreak] = useState(0);
-  const [currentDate, setCurrentDate] = useState(new Date().toISOString().slice(0, 10));
+
+  const {    
+    db,
+    streak, 
+    setStreak,
+    calorieGoal, 
+    setCalorieGoal,
+    calories, 
+    setCalories,
+    setInputCalories, 
+    inputCalories,
+    totalCalories, 
+    setTotalCalories,
+    calorieWarning, 
+    setCalorieWarning,
+    isIncrease,
+    setIsIncrease,
+    testDailyReset,
+    currentDate } = useDatabase();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [goalModalVisible, setGoalModalVisible] = useState(false);
-  const [inputCalories, setInputCalories] = useState('');
-  const [isIncrease, setIsIncrease] = useState(true);
-  const [calorieWarning, setCalorieWarning] = useState('');
 
-  useEffect(() => {
-    async function initializeDatabase() {
-      const database = await SQLite.openDatabaseAsync('calorieTracker.db');
-      setDb(database);
-      await createTable(database);
-      await fetchTodayData(database);
-    }
-    initializeDatabase();
-  }, []);
 
-  const createTable = async (dbInstance) => {
-    try {
-      await dbInstance.execAsync(
-        `CREATE TABLE IF NOT EXISTS calorie_data (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          calories INTEGER DEFAULT 0,
-          calorie_goal INTEGER DEFAULT 2250,
-          date TEXT UNIQUE,
-          streak INTEGER DEFAULT 0
-        );`
-      );
-      console.log('Table created successfully');
-    } catch (error) {
-      console.error('Error creating table:', error);
-    }
-  };
-
-  const fetchTodayData = async (dbInstance) => {
-    try {
-      // First, try to get today's data
-      const result = await dbInstance.getAllAsync(
-        'SELECT * FROM calorie_data WHERE date = ?',
-        [currentDate]
-      );
-
-      if (result.length > 0) {
-        // Today's data exists
-        const todayData = result[0];
-        setTotalCalories(todayData.calories || 0);
-        setCalorieGoal(todayData.calorie_goal.toString());
-        setStreak(todayData.streak || 0);
-      } else {
-        // If no data for today, get the most recent calorie goal
-        const lastGoalResult = await dbInstance.getAllAsync(
-          'SELECT calorie_goal FROM calorie_data ORDER BY date DESC LIMIT 1'
-        );
-
-        const defaultGoal = lastGoalResult.length > 0 ? lastGoalResult[0].calorie_goal : 2250;
-        
-        // Create today's entry with the last known goal
-        await dbInstance.runAsync(
-          'INSERT INTO calorie_data (calories, calorie_goal, date, streak) VALUES (?, ?, ?, ?)',
-          [0, defaultGoal, currentDate, streak]
-        );
-        
-        setCalorieGoal(defaultGoal.toString());
-        setTotalCalories(0);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const checkStreak = async (dbInstance) => {
-    try {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().slice(0, 10);
-
-      const result = await dbInstance.getAllAsync(
-        'SELECT streak FROM calorie_data WHERE date = ?',
-        [yesterdayStr]
-      );
-
-      if (result.length > 0) {
-        setStreak(result[0].streak);
-      }
-    } catch (error) {
-      console.error('Error checking streak:', error);
-    }
-  };
 
   const getStreakColor = (streak) => {
     if (streak >= 75) return '#C17011';
@@ -111,7 +48,7 @@ export default function HomeScreen() {
   };
 
   const getStreakBg = (streak) => {
-    if (streak >= 75) return '#1B0B0B';
+    if (streak >= 75) return ['#1B0B0B', '#1B281C' ];
     if (streak >= 60) return '#0B1D21';
     if (streak >= 50) return '#241212';
     if (streak >= 45) return '#241E12';
@@ -119,26 +56,19 @@ export default function HomeScreen() {
     if (streak >= 35) return '#0F242B';
     if (streak >= 30) return '#1C0303';
     if (streak >= 25) return '#3F340C';
-    if (streak >= 23) return '#112529';
-    if (streak >= 20) return '#112529';
-    if (streak >= 10) return '#011D31';
-    if (streak >= 3) return '#021323';
-    return '#141414';
+    if (streak >= 23) return ['#1B0B0B', '#1B281C' ];
+    if (streak >= 20) return ['#1B0B0B', '#1B281C' ];
+    if (streak >= 10) return ['#1B0B0B', '#1B281C' ];
+    if (streak >= 3) return ['#1B0B0B', '#1B281C' ];
+    return ['#1B0B0B', '#1B281C' ];
   };
 
-  const getStreakImage = (streak: number) => {
-    if (streak >= 100) return require('@/assets/images/pres10a.png');
-    if (streak >= 75) return require('@/assets/images/pres10.png');
-    if (streak >= 60) return require('@/assets/images/pres9.png');
-    if (streak >= 50) return require('@/assets/images/pres8.png');
-    if (streak >= 45) return require('@/assets/images/pres7.png');
-    if (streak >= 40) return require('@/assets/images/pres6.png');
-    if (streak >= 35) return require('@/assets/images/pres5.png');
-    if (streak >= 30) return require('@/assets/images/nuke.png');
-    if (streak >= 20) return require('@/assets/images/pres4.png');
-    if (streak >= 10) return require('@/assets/images/pres3.png');
-    if (streak >= 3) return require('@/assets/images/pres2.png');
-    return require('@/assets/images/pres1.png');
+
+
+
+  const getIcon = (streak: number) => {
+    const prestige = Prestige.find((p) => p.streak <= streak);
+    return prestige ? prestige.img : require('@/assets/images/pres1.png');
   };
 
   const openModal = (increase) => {
@@ -191,40 +121,40 @@ export default function HomeScreen() {
     // Check if inputCalories exists and is a valid number
     if (!inputCalories || isNaN(parseInt(inputCalories))) {
       setCalorieWarning('Please enter a valid number.');
-      setTimeout(() => setCalorieWarning(''), 2500); // Hide warning after 2.5 seconds
-      setInputCalories(''); // Clear input field
+      setTimeout(() => setCalorieWarning(''), 2500);
+      setInputCalories('');
       return;
     }
+
+
+
+
   
     const currentCalories = parseInt(inputCalories);
     const newTotal = isIncrease ? totalCalories + currentCalories : Math.max(0, totalCalories - currentCalories);
   
     // Check if newTotal exceeds calorie goal
     if (newTotal > parseInt(calorieGoal)) {
-      setCalorieWarning(`Du überschreitest dein kalorienziel`); // Set warning message
-      setInputCalories(''); // Clear input field
-  
-      // Set a timeout to clear the warning after 2.5 seconds
+      setCalorieWarning(`Du überschreitest dein kalorienziel`);
+      setInputCalories('');
       setTimeout(() => setCalorieWarning(''), 5500);
-      return; // Exit function
+      return;
     }
   
-    // Clear any existing warning if within the goal
     setCalorieWarning('');
     
-    let newStreak = streak;
-  
     try {
       const result = await db.getAllAsync(
         'SELECT * FROM calorie_data WHERE date = ?',
         [currentDate]
       );
   
+      // Only update streak if we've met or exceeded the goal
+      let newStreak = streak;
       if (newTotal >= parseInt(calorieGoal)) {
-        newStreak += 1; // Increase streak if goal is met
-      } else if (result.length > 0 && newTotal < parseInt(calorieGoal)) {
-        newStreak = 0; // Reset streak if goal not met
+        newStreak += 1;
       }
+      // Don't reset streak if we haven't met the goal yet - this will be handled by resetDailyData
   
       if (result.length > 0) {
         await db.runAsync(
@@ -249,14 +179,13 @@ export default function HomeScreen() {
   
   
   
-  
 
   const progressPercentage = Math.min((totalCalories / parseInt(calorieGoal)) * 100, 100);
 
 
 
   const getNextStreakMilestone = (currentStreak) => {
-    if (currentStreak < 3) return 10;
+    if (currentStreak < 3) return 3;
     if (currentStreak < 10) return 10;
     if (currentStreak < 20) return 20;
     if (currentStreak < 30) return 30;
@@ -275,6 +204,8 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.mainContainer}>
+    <LevelBanner streak={streak} />
+  
       <View style={styles.container}>
       <View style={styles.topButtonContainer}>
   <TouchableOpacity 
@@ -287,13 +218,8 @@ export default function HomeScreen() {
 
 
 
-
   <View style={styles.streakBarContainer}>
-          <Image 
-              source={getStreakImage(streak)}
-              style={styles.streakImageBar}
-              resizeMode="contain"
-            />
+     
         <View  style={styles.streakLevelContainer}>
           <View style={styles.streakLevelBar}>
           <View 
@@ -306,32 +232,30 @@ export default function HomeScreen() {
          
           <View style={styles.streakLevelTextContainer}>
             <View style={styles.leveltext}><Text style={styles.streakBarText}>
-              Streak: {streak}</Text>
+              Streak  <Text style={{color: "#969696"}}>{streak}</Text> </Text>
               </View>
             <View style={styles.leveltext}><Text style={styles.streakBarText} >
-               Ziel: {getNextStreakMilestone(streak)}</Text></View>
+               Nächster Rang ab Streak <Text style={{color: "#B07D31"}}>{getNextStreakMilestone(streak)}</Text></Text></View>
           </View>
 
         </View>
-        <Image 
-              source={getStreakImage(getNextStreakMilestone(streak))}
+                <Image 
+              source={getIcon(getNextStreakMilestone(streak))}
               style={styles.streakImageBar}
-              resizeMode="contain"
-            />
-  </View>
-        <Text style={styles.calorieText}>
-          {totalCalories} / {calorieGoal} kcal
-        </Text>
+              resizeMode="contain"/>
 
-        {/* Progress Bar */}
-        <View style={styles.progressBarContainer}>
-          <View 
-            style={[
-              styles.progressBar, 
-              { width: `${progressPercentage}%` }
-            ]} 
-          />
-        </View>
+       </View>
+
+
+       <NutritionDashboard 
+       calories={totalCalories} 
+       calorieTarget={calorieGoal}
+       proteinCurrent={44}
+       proteinGoal={120}
+       carbsCurrent={150}
+       carbsGoal={200}
+       fatsCurrent={90}
+       fatsGoal={190}  />
 
         {/* Add/Subtract Buttons */}
         <View style={styles.buttonContainer}>
@@ -349,28 +273,40 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+     
         {/* Streak Display */}
         <View style={styles.streakWrapper}>
-          <View style={[
-            styles.streakContainer, 
-            { backgroundColor: getStreakBg(streak) }
-          ]}>
+        <LinearGradient
+             style={styles.streakContainer}  
+             start={{ x: 0, y: 0 }}
+             end={{ x: 1, y: 0 }}
+             colors={['#958A63',  getStreakBg(streak)]}>
+             
+             <View style={{display: "flex", flexDirection: "row", gap: 2,}}>  
              <Image 
-              source={getStreakImage(streak)}
+              source={getIcon(streak)}
               style={styles.streakImage}
               resizeMode="contain"
             />
-            <Text style={styles.streakText}>Streak</Text>
-            <View style={styles.streakNumberContainer}>
+                <View >
               <Text style={[
                 { color: getStreakColor(streak) },
                 styles.streakNumber
               ]}>
-                {streak}
-              </Text>
+               {streak}
+                </Text>
+              <Text style={styles.streakText}>Streak</Text>
             </View>
-          </View>
+            </View>
+
+            <View style={{ width: 150}}>
+              <Text style={styles.QouteText}>Cant Stop, Wont Stop</Text>
+            </View>
+
+
+            </LinearGradient>
         </View>
+        
 
         {/* Calorie Input Modal */}
         <Modal
@@ -462,7 +398,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: '#090909',
   },
   container: {
     padding: 10,
@@ -500,15 +436,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 16,
-    marginTop: 20,
+    marginTop: 12,
     
   },
   button: {
     backgroundColor: '#141414',
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderWidth: 1,
     borderColor: "#1E1E1E",
-    paddingHorizontal: 80,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 16,
   },
   buttonText: {
@@ -525,36 +463,56 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     alignItems: 'center',
     marginTop: 24,
+   
   },
   streakContainer: {
     alignItems: 'center',
-    width: 170,
-    height: 200,
-    borderRadius: 23,
+    justifyContent: "space-between",
+    width: "100%",
+    height: 95,
+    borderRadius: 13,
     borderWidth: 1.5,
     borderColor: "#1A1A1A",
+    flexDirection: "row",
+    display: "flex",
+    paddingHorizontal: 10,
+   
   },
   streakText: {
-    marginTop: 5,
-    fontSize: 20,
-    color: "#7D7D7D",
+    fontSize: 13,
+    color: "#EAEAEA90",
+    textAlign: "center",
+    fontWeight: "bold",
   },
   streakNumber: {
-    fontSize: 33,
+    fontSize: 53,
     fontWeight: 'bold',
+    lineHeight: 60,
+    color: "#EAEAEA90",
+    textAlign: "center",
+    
   },
   streakNumberContainer: {
-    width: '100%',
+     
     alignItems: 'center',
-    padding: 16,
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    height: 64,
-    marginTop: 'auto',
+    display: "flex",
+    flexDirection: "column",
+    gap: 0,
+    height: "100%",
+
+     
+     
   },
   streakImage: {
-    height: 90,
-    
+    height: 80,
+    width: 80,
+  },
+
+  QouteText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#EAEAEA90",
+    width: "80%",
   },
 
   warningText: {
@@ -573,9 +531,9 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 20,
     marginBottom: 15,
-    borderColor: "#313131",
+    borderColor: "#1C1C1C",
     borderWidth: 1,
-    backgroundColor: "#141414",
+    backgroundColor: "#131313",
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
@@ -586,8 +544,8 @@ const styles = StyleSheet.create({
 
   leveltext: {
     color: "white",
-    width: 90,
-    borderRadius: 5, 
+    
+    borderRadius: 12, 
     backgroundColor: "#1F1E1E",
     padding: 4,
     display: "flex",
@@ -602,16 +560,17 @@ const styles = StyleSheet.create({
       justifyContent: "space-between",
       flexDirection: 'row',
       gap: 10,
-      height: 30,
+      height: 25,
     },
 
 
   streakLevelContainer: {
      display: "flex",
-     width: 260,
+     flex: 1,
      height: "full",
      padding:10,
      gap: 4,
+     
 
   },
 
@@ -631,11 +590,10 @@ const styles = StyleSheet.create({
   streakBarText: {
     color: "#6A6A6A",
     fontWeight: "bold",
+    fontSize: 12,
+    paddingHorizontal: 5,
   },
-
- 
-
-
+  
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
