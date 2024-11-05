@@ -48,6 +48,13 @@ export const DatabaseProvider = ({ children }: any) => {
           calorie_goal INTEGER DEFAULT 2250,
           date TEXT UNIQUE,
           streak INTEGER DEFAULT 0
+
+          protein INTEGER DEFAULT 0,
+          protein_goal INTEGER DEFAULT 126,
+          carbs INTEGER DEFAULT 0,
+          carbs_goal INTEGER DEFAULT 382,
+          fats INTEGER DEFAULt 0,
+          fats_goal INTEFER DEFAULT 63,
         );`
       );
       console.log('Table created successfully');

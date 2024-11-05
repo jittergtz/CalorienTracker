@@ -7,6 +7,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import DonutChart from './DonutChart';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 interface NutritionDashboardProps {
@@ -56,15 +57,14 @@ const ProgressBar = ({
           <Text style={styles.targetValue}>{target}G</Text>
         </View>
       </View>
-      <View style={styles.progressBarBackground}>
-        <Animated.View
-          style={[
-            styles.progressBarFill,
-            { backgroundColor: color },
-            animatedStyle,
-          ]}
-        />
-      </View>
+      <Animated.View style={[styles.progressBarBackground, animatedStyle,]}>
+           <LinearGradient
+              style={styles.progressBarFill}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              colors={['#753012', '#FF5C16']}
+            />
+      </Animated.View>
     </View>
   );
 };
@@ -95,21 +95,21 @@ const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
             label="Protein"
             current={proteinCurrent || 0}
             target={proteinGoal || 0}
-            color="#D4AF37" // Gold color
+            color="#FFCB62" // Gold color
             delay={200}
           />
           <ProgressBar
             label="Kohlenhydrate"
             current={carbsCurrent || 0}
             target={carbsGoal || 0}
-            color="#60A5FA" // Blue color
+            color="#FFCB62" // Blue color
             delay={400}
           />
           <ProgressBar
             label="Fette"
             current={fatsCurrent || 0}
             target={fatsGoal || 0}
-            color="#F97316" // Orange color
+            color="#FFCB62" // Orange color
             delay={600}
           />
         </View>
@@ -142,7 +142,8 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   progressBarsContainer: {
-    gap: 18,  
+    gap: 25, 
+    flex:1, 
   },
   progressContainer: {
     gap: 8,
@@ -157,12 +158,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   label: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '500',
+    color: "#6C6C6C",
   },
   currentValue: {
-    color: '#999999',
+    color: '#B2603D',
     fontSize: 14,
   },
   targetValue: {
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   progressBarBackground: {
-    height: 8,
+    height: 4,
     backgroundColor: '#333333',
     borderRadius: 4,
     overflow: 'hidden',

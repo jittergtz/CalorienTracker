@@ -7,6 +7,7 @@ import { Audio } from 'expo-av';
 import { useDatabase } from '../ProviderDb';
 import StatsDashboard from  "@/components/statsDashboard"
 import { Prestige } from '@/components/Prestige/prestige';
+import RepeatCustomerRateChart from "@/components/Barchart"
 
 const Statistics = () => {
   const [sound, setSound] = useState();
@@ -61,18 +62,24 @@ const Statistics = () => {
       <View style={styles.calorieGaolContainer}>
       <Button title="Play Sound" onPress={playSound} /> 
 
+
+
       <StatsDashboard 
       streak={highestStreak}
        completionStats={completionStats}
        perfectMonths={perfectMonths}/>
       </View>
+
+
     
       
     <View>
-      <View style={styles.textContainer}><Text style={styles.text}>Ränge</Text></View>
+  
     <View style={styles.container}>
      <ScrollView contentContainerStyle={styles.new}
       showsHorizontalScrollIndicator={false} >
+              <RepeatCustomerRateChart/>
+              <View style={styles.textContainer}><Text style={styles.text}>Ränge</Text></View>
       {images.map((item, index) => (
 
         
@@ -105,8 +112,10 @@ const Statistics = () => {
                   {item.description}
                   </Text>
                 </View>
-          
+               
         </View>
+
+        
       ))}
       </ScrollView>
     </View>
@@ -118,7 +127,6 @@ const Statistics = () => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: 10,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
@@ -128,7 +136,7 @@ const styles = StyleSheet.create({
 
   calorieGaolContainer: {
     height: 300,
-    marginTop: 100,
+    marginTop: 70,
     padding: 0,
   },
 

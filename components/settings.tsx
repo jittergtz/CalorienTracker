@@ -24,16 +24,13 @@ const SettingsModal = ({ selectedTab, onTabSelect }: any) => {
           <View style={styles.modalView}>
             {/* Header with close button */}
             <View style={styles.modalHeader}>
-              <Text style={styles.headerText}>Wähle ein Dashboard</Text>
+              <Text style={styles.headerText}>Wie möchtest du tracken?</Text>
               <Pressable onPress={() => setModalVisible(false)}>
                 <Ionicons name="close" size={24} color="white" />
               </Pressable>
             </View>
 
-            {/* Change Calories Button */}
-            <Pressable style={styles.changeButton}>
-              <Text style={styles.buttonText}>Change Calories</Text>
-            </Pressable>
+          
 
             {/* Tabs Component */}
             <View style={styles.tabContainer}>
@@ -76,6 +73,52 @@ const SettingsModal = ({ selectedTab, onTabSelect }: any) => {
                 </Text>
               </Pressable>
             </View>
+         
+         
+              {/* Change Calories Button */}
+
+              { selectedTab === 'Einfach' ? (
+                   <View style={{gap:10, marginTop:15 , flexDirection: "column", padding: 8, borderRadius: 10, backgroundColor: "#303030",
+                    justifyContent: "start", width:"100%",}}>
+                 <Text style={{color:"#C0C0C0", fontWeight: "bold",fontSize:16}}>Kalorien Ziel</Text>
+                 <Pressable style={styles.changeButton}>
+                 <Text style={styles.buttonText}>Anpassen</Text>
+               </Pressable>
+             </View>
+              ):(
+                <>
+              <View style={{gap:10, marginTop:15 , flexDirection: "column", padding: 8, borderRadius: 10, backgroundColor: "#303030",
+                 justifyContent: "start", width:"100%",}}>
+              <Text style={{color:"#C0C0C0", fontWeight: "bold",fontSize:16}}>Kalorien Ziel</Text>
+              <Pressable style={styles.changeButton}>
+              <Text style={styles.buttonText}>Anpassen</Text>
+            </Pressable>
+          </View>
+
+          <View style={{gap:10, marginTop:10 , flexDirection: "column", padding: 8, borderRadius: 10, backgroundColor: "#303030",
+                 justifyContent: "start", width:"100%",}}>
+              <Text style={{color:"#C0C0C0", fontWeight: "bold",fontSize:16}}>Proteine Ziel in Gramm</Text>
+              <Pressable style={styles.changeButton}>
+              <Text style={styles.buttonText}>Anpassen</Text>
+            </Pressable>
+          </View>
+          <View style={{gap:10, marginTop:10 , flexDirection: "column", padding: 8, borderRadius: 10, backgroundColor: "#303030",
+                 justifyContent: "start", width:"100%",}}>
+              <Text style={{color:"#C0C0C0", fontWeight: "bold",fontSize:16}}>Kohlenhydrate Ziel in Gramm</Text>
+              <Pressable style={styles.changeButton}>
+              <Text style={styles.buttonText}>Anpassen</Text>
+            </Pressable>
+          </View>
+          <View style={{gap:10, marginTop:10 , flexDirection: "column", padding: 8, borderRadius: 10, backgroundColor: "#303030",
+                 justifyContent: "start", width:"100%",}}>
+              <Text style={{color:"#C0C0C0", fontWeight: "bold",fontSize:16}}>Fette Ziel in Gramm</Text>
+              <Pressable style={styles.changeButton}>
+              <Text style={styles.buttonText}>Anpassen</Text>
+            </Pressable>
+          </View>
+          </>
+          )}
+          
           </View>
         </View>
       </Modal>
@@ -114,16 +157,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headerText: {
-    color: 'white',
-    fontSize: 24,
+    color: '#B4B4B4',
+    fontSize: 20,
     fontWeight: 'bold',
   },
   changeButton: {
     backgroundColor: '#007AFF',
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 24,
     borderRadius: 10,
-    marginBottom: 20,
     width: '100%',
     alignItems: 'center',
   },

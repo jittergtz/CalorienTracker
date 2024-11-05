@@ -9,6 +9,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import  DonutChart from "@/components/DonutChart"
 import NutritionDashboard from "@/components/AdvancedDashboard"
 import SettingsModal from "@/components/settings"
+import AdvancedDashboardModal from "@/components/AdvancedDashboardModal"
+import RepeatCustomerRateChart from "@/components/Barchart"
 
 export default function HomeScreen() {
 
@@ -281,19 +283,21 @@ export default function HomeScreen() {
       <NutritionDashboard
         calories={totalCalories}
         calorieTarget={calorieGoal}
-        protein={{ current: 44, target: 120 }}
-        carbs={{ current: 150, target: 200 }}
-        fats={{ current: 90, target: 190 }}
-      />
-       ) : (
+        proteinCurrent={80}
+        proteinGoal={126}
+        carbsCurrent={260}
+        carbsGoal={382}
+        fatsCurrent={20}
+        fatsGoal={63}
+        />) : (
       <DonutChart 
         currentValue={totalCalories} 
         targetValue={calorieGoal} 
       />
         )}
-        
-     
 
+        
+    
         {/* Add/Subtract Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
@@ -302,13 +306,20 @@ export default function HomeScreen() {
           >
             <Text style={styles.buttonText}>-</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+
+          {advancedDashboard ? (
+                <AdvancedDashboardModal/>
+          ):(
+            <TouchableOpacity 
             style={styles.button}
             onPress={() => openModal(true)}
           >
             <Text style={styles.buttonText}>+</Text>
           </TouchableOpacity>
+          )}
+    
         </View>
+
 
      
         {/* Streak Display */}
