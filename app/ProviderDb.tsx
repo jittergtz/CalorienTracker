@@ -28,6 +28,7 @@ export const DatabaseProvider = ({ children }: any) => {
       const database = await SQLite.openDatabaseAsync('calorieTracker.db');
       setDb(database);
       await createTable(database);
+      await fetchTodayData(database);
       await resetDailyData(database);
       await fetchHighestStreak(database); // Fetch highest streak on init
       await calculateCompletionStats(database);
@@ -35,6 +36,68 @@ export const DatabaseProvider = ({ children }: any) => {
     }
     initializeDatabase();
   }, []);
+
+
+
+  const createTable = async (dbInstance) => {
+    try {
+      await dbInstance.execAsync(
+        `CREATE TABLE IF NOT EXISTS calorie_data (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          calories INTEGER DEFAULT 0,
+          calorie_goal INTEGER DEFAULT 2250,
+          date TEXT UNIQUE,
+          streak INTEGER DEFAULT 0
+        );`
+      );
+      console.log('Table created successfully');
+    } catch (error) {
+      console.error('Error creating table:', error);
+    }
+  };
+
+
+
+
+  const fetchTodayData = async (dbInstance) => {
+    try {
+      // First, try to get today's data
+      const result = await dbInstance.getAllAsync(
+        'SELECT * FROM calorie_data WHERE date = ?',
+        [currentDate]
+      );
+
+      if (result.length > 0) {
+        // Today's data exists
+        const todayData = result[0];
+        setTotalCalories(todayData.calories || 0);
+        setCalorieGoal(todayData.calorie_goal.toString());
+        setStreak(todayData.streak || 0);
+        console.log('Fetched today\'s calories:', todayData.calories);
+      } else {
+      // Get the most recent data
+      const lastDataResult = await dbInstance.getAllAsync(
+        'SELECT * FROM calorie_data ORDER BY date DESC LIMIT 1'
+      );
+
+      const defaultGoal = lastDataResult.length > 0 ? lastDataResult[0].calorie_goal : 2250;
+      const lastCalories = lastDataResult.length > 0 ? lastDataResult[0].calories : 0;
+      
+        // Create today's entry with the last known goal
+        await dbInstance.runAsync(
+          'INSERT INTO calorie_data (calories, calorie_goal, date, streak) VALUES (?, ?, ?, ?)',
+          [0, defaultGoal, currentDate, streak]
+        );
+        
+        setCalorieGoal(defaultGoal.toString());
+        setTotalCalories(lastCalories);
+        setCalories(lastCalories); // Add this line
+        console.log('Created new entry with calories:', lastCalories);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
 
   const calculatePerfectMonths = async (dbInstance) => {
@@ -129,6 +192,7 @@ export const DatabaseProvider = ({ children }: any) => {
     }
   };
 
+ 
   const resetDailyData = async (dbInstance) => {
     const today = new Date().toISOString().slice(0, 10);
     console.log("resetDailyData function called with date:", today);
@@ -146,61 +210,78 @@ export const DatabaseProvider = ({ children }: any) => {
       );
       console.log("Yesterday's result:", yesterdayResult);
   
-      // Determine if the streak should be reset
+      // Determine if the streak should continue or reset
       let newStreak = 0;
       if (yesterdayResult.length > 0) {
         const { calories, calorie_goal, streak } = yesterdayResult[0];
-  
-        // If yesterday's calories did not meet the goal, reset streak
-        if (calories < calorie_goal || null) {
-          newStreak = 0;
-          console.log("Yesterday's goal was NOT met. Resetting streak to 0.");
+        // If yesterday's calories met or exceeded the goal, increment streak
+        if (calories >= calorie_goal) {
+          newStreak = streak + 1;
+          console.log("Yesterday's goal was met. New streak:", newStreak);
         } else {
-          // If yesterday met the goal, keep the streak as is
-          newStreak = streak;
-          console.log("Yesterday's goal was met. Keeping streak as:", newStreak);
-
-       
+          console.log("Yesterday's goal was NOT met. Streak reset to 0");
         }
       }
-
-
+  
       // Check if there's an entry for today
       const todayResult = await dbInstance.getAllAsync(
         'SELECT * FROM calorie_data WHERE date = ?',
         [today]
       );
   
-      if (todayResult.length > 0) {
-        // Update today's entry with reset calories and streak
-        await dbInstance.runAsync(
-          'UPDATE calorie_data SET calories = 0, streak = ? WHERE date = ?',
-          [newStreak, today]
-        );
-        console.log("Updated existing entry for today with streak:", newStreak);
+      // Only proceed with updates if it's actually a new day
+      if (today !== currentDate) {
+        if (todayResult.length > 0) {
+          // Update only the streak for today's existing entry
+          await dbInstance.runAsync(
+            'UPDATE calorie_data SET streak = ? WHERE date = ?',
+            [newStreak, today]
+          );
+          console.log("Updated existing entry's streak for today:", newStreak);
+        } else {
+          // Insert a new entry for today if it doesn't exist
+          const lastGoal = yesterdayResult.length > 0 ? yesterdayResult[0].calorie_goal : 2250;
+          const lastCalories = yesterdayResult.length > 0 ? yesterdayResult[0].calories : 0;
+          
+          await dbInstance.runAsync(
+            'INSERT INTO calorie_data (calories, calorie_goal, date, streak) VALUES (?, ?, ?, ?)',
+            [lastCalories, lastGoal, today, newStreak]
+          );
+          console.log("Inserted new entry for today with calories:", lastCalories);
+          
+          // Only update states if we're creating a new entry
+          setTotalCalories(lastCalories);
+          setCalories(lastCalories);
+        }
+  
+        // Update streak state
+        setStreak(newStreak);
+        
+        // Update highest streak if necessary
+        if (newStreak > highestStreak) {
+          setHighestStreak(newStreak);
+        }
       } else {
-        // Insert a new entry for today if it doesn't exist
-        const lastGoal = yesterdayResult.length > 0 ? yesterdayResult[0].calorie_goal : 2250;
-        await dbInstance.runAsync(
-          'INSERT INTO calorie_data (calories, calorie_goal, date, streak) VALUES (?, ?, ?, ?)',
-          [0, lastGoal, today, newStreak]
-        );
-        console.log("Inserted new entry for today with streak:", newStreak);
+        // If it's the same day, just fetch and set the current values
+        if (todayResult.length > 0) {
+          const currentCalories = todayResult[0].calories || 0;
+          setTotalCalories(currentCalories);
+          setCalories(currentCalories);
+          setStreak(todayResult[0].streak || 0);
+        }
       }
   
-      // Log the final streak to confirm
-      console.log("Data reset for today completed. Final streak value for today:", newStreak);
-  
-      if (newStreak > highestStreak) {
-        setHighestStreak(newStreak);
-      }
-
       // After updating the daily data, recalculate completion stats
       await calculateCompletionStats(dbInstance);
       await calculatePerfectMonths(dbInstance);
   
-      setTotalCalories(0);
-      setStreak(newStreak);
+      console.log("Data reset/update completed. Current values:", {
+        date: today,
+        streak: newStreak,
+        calories: todayResult.length > 0 ? todayResult[0].calories : 0,
+        isNewDay: today !== currentDate
+      });
+  
     } catch (error) {
       console.error('Error resetting daily data:', error);
     }
@@ -262,58 +343,7 @@ export const DatabaseProvider = ({ children }: any) => {
   };
   
 
-  const createTable = async (dbInstance) => {
-    try {
-      await dbInstance.execAsync(
-        `CREATE TABLE IF NOT EXISTS calorie_data (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          calories INTEGER DEFAULT 0,
-          calorie_goal INTEGER DEFAULT 2250,
-          date TEXT UNIQUE,
-          streak INTEGER DEFAULT 0
-        );`
-      );
-      console.log('Table created successfully');
-    } catch (error) {
-      console.error('Error creating table:', error);
-    }
-  };
-
-  const fetchTodayData = async (dbInstance) => {
-    try {
-      // First, try to get today's data
-      const result = await dbInstance.getAllAsync(
-        'SELECT * FROM calorie_data WHERE date = ?',
-        [currentDate]
-      );
-
-      if (result.length > 0) {
-        // Today's data exists
-        const todayData = result[0];
-        setTotalCalories(todayData.calories || 0);
-        setCalorieGoal(todayData.calorie_goal.toString());
-        setStreak(todayData.streak || 0);
-      } else {
-        // If no data for today, get the most recent calorie goal
-        const lastGoalResult = await dbInstance.getAllAsync(
-          'SELECT calorie_goal FROM calorie_data ORDER BY date DESC LIMIT 1'
-        );
-
-        const defaultGoal = lastGoalResult.length > 0 ? lastGoalResult[0].calorie_goal : 2250;
-        
-        // Create today's entry with the last known goal
-        await dbInstance.runAsync(
-          'INSERT INTO calorie_data (calories, calorie_goal, date, streak) VALUES (?, ?, ?, ?)',
-          [0, defaultGoal, currentDate, streak]
-        );
-        
-        setCalorieGoal(defaultGoal.toString());
-        setTotalCalories(0);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+ 
 
   const checkStreak = async (dbInstance) => {
     try {

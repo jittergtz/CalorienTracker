@@ -8,6 +8,7 @@ import { Prestige } from '@/components/Prestige/prestige';
 import { LinearGradient } from 'expo-linear-gradient';
 import  DonutChart from "@/components/DonutChart"
 import NutritionDashboard from "@/components/AdvancedDashboard"
+import SettingsModal from "@/components/settings"
 
 export default function HomeScreen() {
 
@@ -32,7 +33,13 @@ export default function HomeScreen() {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [goalModalVisible, setGoalModalVisible] = useState(false);
-  const [advancedDashboard, setAdvancedDashboard] = useState(false)
+  const [selectedTab, setSelectedTab] = useState('Einfach');
+  const [advancedDashboard, setAdvancedDashboard] = useState(false);
+
+  const handleTabSelect = (tab) => {
+    setSelectedTab(tab);
+    setAdvancedDashboard(tab === 'Detaliert'); // Set to true if 'Detaliert' is selected, false if 'Einfach'
+  };
 
 
   const getStreakColor = (streak) => {
@@ -211,8 +218,17 @@ export default function HomeScreen() {
   return (
     <View style={styles.mainContainer}>
     <LevelBanner streak={streak} />
+
+  
   
       <View style={styles.container}>
+      
+      <SettingsModal
+        selectedTab={selectedTab}
+        onTabSelect={handleTabSelect}
+        advancedDashboard={advancedDashboard}
+      />
+       
       <View style={styles.topButtonContainer}>
   <TouchableOpacity 
     style={styles.goalButton}

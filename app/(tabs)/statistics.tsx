@@ -35,20 +35,20 @@ const Statistics = () => {
   }, [sound]);
 
   const images = [
-    { src: require('@/assets/images/pres1.png'), streak: 1,  description: "Um diesen Rang freizuschalten musst du eine Streak von 1 erreichen" },
-    { src: require('@/assets/images/pres2.png'), streak: 3, description: "Um diesen Rang freizuschalten musst du eine Streak von 3 erreichen"  },
-    { src: require('@/assets/images/pres3.png'), streak: 10, description: "Um diesen Rang freizuschalten musst du eine Streak von 10 erreichen"  },
-    { src: require('@/assets/images/pres4.png'), streak: 20, description: "Um diesen Rang freizuschalten musst du eine Streak von 20 erreichen"  },
+    { src: require('@/assets/images/pres1.png'), streak: 1,  description: "Um diesen Rang freizuschalten musst du eine Streak von 1 tag erreichen" },
+    { src: require('@/assets/images/pres2.png'), streak: 3, description: "Um diesen Rang freizuschalten musst du eine Streak von 3 tagen erreichen"  },
+    { src: require('@/assets/images/bo3zombies1.webp'), streak: 7, description: "Um diesen Rang freizuschalten musst du eine Streak von 7 tagen erreichen"  },
+    { src: require('@/assets/images/boszombies2.webp'), streak: 12, description: "Um diesen Rang freizuschalten musst du eine Streak von 12 tagen erreichen"  },
     { src: require('@/assets/images/nuke.png'), streak: 30, description: "Um diesen Rang freizuschalten musst du eine Streak von 30 erreichen"  },
-    { src: require('@/assets/images/pres5.png'), streak: 35, description: "Um diesen Rang freizuschalten musst du eine Streak von 35 erreichen"  },
-    { src: require('@/assets/images/pres6.png'), streak: 40, description: "Um diesen Rang freizuschalten musst du eine Streak von 40 erreichen"  },
-    { src: require('@/assets/images/pres7.png'), streak: 45, description: "Um diesen Rang freizuschalten musst du eine Streak von 45 erreichen"  },
-    { src: require('@/assets/images/pres8.png'), streak: 50, description: "Um diesen Rang freizuschalten musst du eine Streak von 50 erreichen"  },
-    { src: require('@/assets/images/pres9.png'), streak: 60, description: "Um diesen Rang freizuschalten musst du eine Streak von 60 erreichen"  },
-    { src: require('@/assets/images/pres10.png'), streak: 75, description: "Um diesen Rang freizuschalten musst du eine Streak von 75 erreichen"  },
-    { src: require('@/assets/images/pres10a.png'), streak: 100, description: "Um diesen Rang freizuschalten musst du eine Streak von 100 erreichen"  },
+    { src: require('@/assets/images/pres5.png'), streak: 35, description: "Um diesen Rang freizuschalten musst du eine Streak von 35 tagen erreichen"  },
+    { src: require('@/assets/images/pres6.png'), streak: 40, description: "Um diesen Rang freizuschalten musst du eine Streak von 40 tagen erreichen"  },
+    { src: require('@/assets/images/pres7.png'), streak: 45, description: "Um diesen Rang freizuschalten musst du eine Streak von 45 tagen erreichen"  },
+    { src: require('@/assets/images/pres8.png'), streak: 50, description: "Um diesen Rang freizuschalten musst du eine Streak von 50 tagen erreichen"  },
+    { src: require('@/assets/images/pres9.png'), streak: 60, description: "Um diesen Rang freizuschalten musst du eine Streak von 60 tagen erreichen"  },
+    { src: require('@/assets/images/pres10.png'), streak: 75, description: "Um diesen Rang freizuschalten musst du eine Streak von 75 tagen erreichen"  },
+    { src: require('@/assets/images/pres10a.png'), streak: 100, description: "Um diesen Rang freizuschalten musst du eine Streak von 100 tagen erreichen"  },
 
-    { src: require('@/assets/images/pres7.png'), streak: 125, description: "Um diesen Rang freizuschalten musst du eine Streak von 125 erreichen"  },
+    { src: require('@/assets/images/pres7.png'), streak: 125, description: "Um diesen Rang freizuschalten musst du eine Streak von 125 tagen erreichen"  },
     { src: require('@/assets/images/pres8.png'), streak: 150, description: "???"  },
     { src: require('@/assets/images/pres9.png'), streak: 200, description: "???"  },
     { src: require('@/assets/images/pres10.png'), streak: 250, description: "???"  },
@@ -84,7 +84,7 @@ const Statistics = () => {
           source={item.src} style={styles.image} />
       
       
-          {streak <= item.streak && (
+          {highestStreak <= item.streak && (
             <View style={styles.lockedOverlay}>
                <View style={styles.lockedContainer}>
               <Image
